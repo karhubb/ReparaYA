@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario - Repara Ya</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" th:href="@{/css/inventario.css}">
+    <link rel="stylesheet" th:href="@{/css/global.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="dashboard-container">
+
+    <div class="sidebar">
+        <div class="logo"><i class="fas fa-tools"></i> <span>Repara Ya</span></div>
+        <ul class="menu-items">
+            <li><a href="/dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="/servicios"><i class="fas fa-wrench"></i> Servicios</a></li>
+            <li><a href="/gastos"><i class="fas fa-file-invoice-dollar"></i> Gastos</a></li>
+            <li><a href="/clientes"><i class="fas fa-users"></i> Clientes</a></li>
+            <li class="active"><a href="/inventario"><i class="fas fa-box"></i> Inventario</a></li>
+            <li><a href="/reportes"><i class="fas fa-chart-bar"></i> Reportes</a></li>
+            <li class="bottom-item"><a href="/configuracion"><i class="fas fa-cog"></i> Configuración</a></li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+
+        <div class="top-bar">
+            <div class="search-wrapper global-search">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Buscar...">
+            </div>
+            <div class="user-profile">
+                <div class="notif-badge"><i class="far fa-bell"></i><span class="dot"></span></div>
+                <div class="avatar-circle">AD</div>
+                <span class="user-name">Admin</span>
+            </div>
+        </div>
+
+        <div class="page-header">
+            <div>
+                <h1>Inventario</h1>
+                <p>Gestiona las piezas y productos disponibles</p>
+            </div>
+            <button class="btn-primary" onclick="nuevoProducto()">
+                <i class="fas fa-plus"></i> Nuevo producto
+            </button>
+        </div>
+
+        <div class="inv-kpi-grid">
+            <div class="inv-kpi-card">
+                <div class="kpi-icon-box blue"><i class="fas fa-box-open"></i></div>
+                <div>
+                    <span class="kpi-label">Total productos</span>
+                    <span class="kpi-number" th:text="${total}">0</span>
+                </div>
+            </div>
+            <div class="inv-kpi-card">
+                <div class="kpi-icon-box red"><i class="fas fa-times-circle"></i></div>
+                <div>
+                    <span class="kpi-label">Agotados</span>
+                    <span class="kpi-number text-red" th:text="${agotados}">0</span>
+                </div>
+            </div>
+            <div class="inv-kpi-card">
+                <div class="kpi-icon-box orange"><i class="fas fa-exclamation-triangle"></i></div>
+                <div>
+                    <span class="kpi-label">Stock bajo</span>
+                    <span class="kpi-number text-orange" th:text="${stockBajo}">0</span>
+                </div>
+            </div>
+            <div class="inv-kpi-card">
+                <div class="kpi-icon-box green"><i class="fas fa-dollar-sign"></i></div>
+                <div>
+                    <span class="kpi-label">Valor inventario</span>
+                    <span class="kpi-number text-green" th:text="'$' + ${valorTotal}">$0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="inv-card">
+            <div class="table-toolbar">
+                <div class="search-wrapper table-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Buscar por nombre o categoría...">
+                </div>
+                <div class="filter-wrapper">
+                    <select class="filter-select"><option>Todas las categorías</option></select>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="inv-table">
+                    <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Categoría</th>
+                        <th>Stock</th>
+                        <th>Precio costo</th>
+                        <th>Precio venta</th>
+                        <th>Margen</th>
+                        <th>Estado</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="prod : ${productos}">
+                        <td>
+                            <div class="product-cell">
+                                <img th:if="${prod.foto != null}" th:src="@{'/uploads/productos/' + ${prod.foto}}" class="prod-img-sm" style="object-fit: cover;">
+                                <div th:if="${prod.foto == null}" class="prod-img-sm" style="background: #eee;"></div>
+
+                                <div class="cell-column">
+                                    <span class="fw-600" th:text="${prod.nombre}">Pantalla</span>
+                                    <span class="sub-text" th:text="${prod.proveedor}">Proveedor A</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="cat-badge" th:classappend="'cat-' + ${prod.getCategoriaCss()}" th:text="${prod.categoria}">Pantallas</span>
+                        </td>
+                        <td>
+                            <span class="fw-700" th:text="${prod.stock}">5</span>
+                            <span class="sub-text" th:if="${prod.stock <= prod.stockMinimo}">(min: [[${prod.stockMinimo}]])</span>
+                        </td>
+                        <td th:text="'$' + ${prod.precioCosto}">$100</td>
+                        <td th:text="'$' + ${prod.precioVenta}">$120</td>
+                        <td>
+                            <div class="margin-cell">
+                                <i class="fas fa-arrow-up text-green"></i>
+                                <span class="text-green fw-600" th:text="${prod.getMargenPorcentaje()} + '%'">20%</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="status-pill" th:classappend="'status-' + ${prod.getEstadoCss()}" th:text="${prod.estado}">Normal</span>
+                        </td>
+                        <td>
+                            <button class="btn-icon-edit"
+                                    th:data-id="${prod.id}"
+                                    th:data-nombre="${prod.nombre}"
+                                    th:data-cat="${prod.categoria}"
+                                    th:data-prov="${prod.proveedor}"
+                                    th:data-desc="${prod.descripcion}"
+                                    th:data-stock="${prod.stock}"
+                                    th:data-min="${prod.stockMinimo}"
+                                    th:data-costo="${prod.precioCosto}"
+                                    th:data-venta="${prod.precioVenta}"
+                                    th:data-foto="${prod.foto}"
+                                    onclick="editarProducto(this)">
+                                <i class="far fa-edit"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modalNuevoProducto" class="modal-overlay">
+    <div class="modal-content modal-medium">
+        <div class="modal-header">
+            <div><h2 id="modalTitulo">Nuevo producto</h2><p class="modal-subtitle">Gestiona tu inventario</p></div>
+            <span class="close-btn" onclick="cerrarModal('modalNuevoProducto')">&times;</span>
+        </div>
+
+        <form id="formProducto" action="/inventario/guardar" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="id" id="inId">
+
+            <div class="modal-body scrollable-body">
+
+                <h3 class="section-title">Información Básica</h3>
+                <div class="form-group">
+                    <label>Nombre del producto *</label>
+                    <input type="text" name="nombre" id="inNombre" placeholder="Ej: Pantalla iPhone 12" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>Categoría *</label>
+                        <select name="categoria" id="inCat">
+                            <option value="Pantallas">Pantallas</option>
+                            <option value="Baterías">Baterías</option>
+                            <option value="Accesorios">Accesorios</option>
+                            <option value="Componentes">Componentes</option>
+                        </select>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label>Proveedor</label>
+                        <input type="text" name="proveedor" id="inProv" placeholder="Proveedor principal">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Descripción</label>
+                    <textarea name="descripcion" id="inDesc" rows="2" placeholder="Detalles técnicos..."></textarea>
+                </div>
+
+                <h3 class="section-title">Control de stock</h3>
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>Stock actual *</label>
+                        <input type="number" name="stock" id="inStock" value="0" required>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label>Stock mínimo *</label>
+                        <input type="number" name="stockMinimo" id="inMin" value="5">
+                    </div>
+                </div>
+
+                <h3 class="section-title">Información comercial</h3>
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>Precio costo *</label>
+                        <input type="number" name="precioCosto" id="inCosto" placeholder="0" step="0.01" required>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label>Precio venta *</label>
+                        <input type="number" name="precioVenta" id="inVenta" placeholder="0" step="0.01" required>
+                    </div>
+                </div>
+
+                <h3 class="section-title">Imagen del producto</h3>
+                <div class="upload-box-small" onclick="document.getElementById('fileInput').click()" style="cursor:pointer; position:relative;">
+                    <input type="file" name="archivoFoto" id="fileInput" style="display:none;" onchange="verPreview(this)">
+
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p><b>Subir imagen</b></p>
+                    <span>Click para seleccionar archivo</span>
+
+                    <img id="imgPreview" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; border-radius:8px;">
+                </div>
+
+            </div>
+            <div class="modal-footer space-between">
+                <a id="btnEliminar" href="#" class="btn-danger" style="text-decoration:none; padding:10px 20px; display:none;">Eliminar</a>
+
+                <div style="margin-left:auto;">
+                    <button type="button" class="btn-secondary" onclick="cerrarModal('modalNuevoProducto')">Cancelar</button>
+                    <button type="submit" class="btn-primary">Guardar</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function abrirModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal-overlay')) {
+            event.target.style.display = "none";
+        }
+    }
+
+    function nuevoProducto() {
+        document.getElementById('formProducto').reset();
+        document.getElementById('inId').value = ""; // ID vacío para crear
+        document.getElementById('modalTitulo').innerText = "Nuevo Producto";
+
+        // Ocultar eliminar y preview
+        document.getElementById('btnEliminar').style.display = 'none';
+        document.getElementById('imgPreview').style.display = 'none';
+
+        abrirModal('modalNuevoProducto');
+    }
+
+    function editarProducto(btn) {
+        const d = btn.dataset;
+
+        document.getElementById('inId').value = d.id;
+        document.getElementById('inNombre').value = d.nombre;
+        document.getElementById('inCat').value = d.cat;
+        document.getElementById('inProv').value = d.prov;
+        document.getElementById('inStock').value = d.stock;
+        document.getElementById('inMin').value = d.min;
+        document.getElementById('inCosto').value = d.costo;
+        document.getElementById('inVenta').value = d.venta;
+        if(d.desc) document.getElementById('inDesc').value = d.desc;
+
+        const img = document.getElementById('imgPreview');
+        if(d.foto && d.foto !== 'null') {
+            img.src = '/uploads/productos/' + d.foto;
+            img.style.display = 'block';
+        } else {
+            img.style.display = 'none';
+        }
+
+        const btnDel = document.getElementById('btnEliminar');
+        btnDel.href = '/inventario/eliminar/' + d.id;
+        btnDel.style.display = 'block';
+        btnDel.onclick = e => { if(!confirm("¿Eliminar este producto?")) e.preventDefault(); };
+
+        document.getElementById('modalTitulo').innerText = "Editar Producto";
+        abrirModal('modalNuevoProducto');
+    }
+
+    function verPreview(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('imgPreview').src = e.target.result;
+                document.getElementById('imgPreview').style.display = 'block';
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
+
+</body>
+</html>

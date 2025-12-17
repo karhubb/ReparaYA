@@ -1,0 +1,78 @@
+/* =========================================
+   1. VARIABLES
+   ========================================= */
+:root {
+    --primary: #2563EB; --primary-dark: #1e40af;
+    --bg-body: #F3F4F6; --bg-card: #ffffff; --bg-sidebar: #ffffff;
+    --text-main: #1F2937; --text-muted: #6B7280;
+    --border-color: #E5E7EB;
+    --sidebar-width: 250px;
+    --sidebar-width-collapsed: 80px;
+}
+[data-theme="dark"] {
+    --bg-body: #111827; --bg-card: #1F2937; --bg-sidebar: #1F2937;
+    --text-main: #F9FAFB; --text-muted: #9CA3AF; --border-color: #374151;
+}
+
+/* =========================================
+   2. ESTILOS BASE Y CORRECCIÓN DE SCROLL 🛠️
+   ========================================= */
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+
+html, body {
+    /* IMPORTANTE PARA EL SCROLL EN TABLET */
+    height: auto;
+    min-height: 100vh;
+    overflow-y: auto; /* Permite deslizar hacia abajo */
+    overflow-x: hidden; /* Evita deslizamiento horizontal */
+
+    background-color: var(--bg-body);
+    color: var(--text-main);
+    transition: all 0.3s;
+}
+
+a { text-decoration: none; color: inherit; } ul { list-style: none; }
+
+/* =========================================
+   3. LAYOUT (Escritorio por defecto)
+   ========================================= */
+.sidebar {
+    width: var(--sidebar-width);
+    background: var(--bg-sidebar);
+    height: 100vh; position: fixed; left: 0; top: 0;
+    border-right: 1px solid var(--border-color);
+    display: flex; flex-direction: column; padding: 20px;
+    transition: width 0.3s ease; z-index: 1000;
+}
+.main-content {
+    margin-left: var(--sidebar-width);
+    width: calc(100% - var(--sidebar-width));
+    padding: 30px;
+    transition: margin-left 0.3s ease, width 0.3s ease;
+}
+/* Estilos básicos de menú... */
+.logo { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 30px; }
+.menu-items li a { display: flex; align-items: center; gap: 12px; padding: 12px 15px; color: var(--text-muted); border-radius: 8px; margin-bottom: 5px; transition: 0.2s; }
+.menu-items li a:hover, .menu-items li.active a { background-color: #EFF6FF; color: var(--primary); }
+[data-theme="dark"] .menu-items li a:hover { background-color: #374151; }
+
+/* =========================================
+   4. MODO TABLET REAL (Menos de 768px) 📱
+   ========================================= */
+/* Se activa solo en tablets verticales y celulares */
+@media (max-width: 768px) {
+    .sidebar {
+        width: var(--sidebar-width-collapsed); padding: 20px 10px;
+    }
+    .sidebar .logo span, .sidebar .menu-items a span { display: none; }
+    .sidebar .logo i { margin: 0 auto; font-size: 24px; }
+    .sidebar .menu-items a { justify-content: center; }
+    .sidebar .menu-items a i { margin: 0; font-size: 22px; }
+
+    .main-content {
+        margin-left: var(--sidebar-width-collapsed);
+        width: calc(100% - var(--sidebar-width-collapsed));
+        padding: 15px; padding-bottom: 80px; /* Espacio extra abajo */
+    }
+    .table-responsive { display: block; width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}

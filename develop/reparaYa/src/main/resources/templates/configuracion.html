@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración - Repara Ya</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" th:href="@{/css/configuracion.css}">
+    <link rel="stylesheet" th:href="@{/css/global.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="dashboard-container">
+
+    <div class="sidebar">
+        <div class="logo"><i class="fas fa-tools"></i> <span>Repara Ya</span></div>
+        <ul class="menu-items">
+            <li><a href="/dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="/servicios"><i class="fas fa-wrench"></i> Servicios</a></li>
+            <li><a href="/gastos"><i class="fas fa-file-invoice-dollar"></i> Gastos</a></li>
+            <li><a href="/clientes"><i class="fas fa-users"></i> Clientes</a></li>
+            <li><a href="/inventario"><i class="fas fa-box"></i> Inventario</a></li>
+            <li><a href="/reportes"><i class="fas fa-chart-bar"></i> Reportes</a></li>
+            <li class="bottom-item active"><a href="/configuracion"><i class="fas fa-cog"></i> Configuración</a></li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+
+        <div class="top-bar">
+            <div class="search-wrapper global-search">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Buscar...">
+            </div>
+            <div class="user-profile">
+                <div class="notif-badge"><i class="far fa-bell"></i><span class="dot"></span></div>
+                <div class="avatar-circle">AD</div>
+                <span class="user-name">Admin</span>
+            </div>
+        </div>
+
+        <div class="page-header">
+            <div>
+                <h1>Configuración</h1>
+                <p>Administra los ajustes del sistema</p>
+            </div>
+        </div>
+
+        <!-- Contenedor SOLO para botones de pestañas -->
+        <div class="tabs-container">
+            <button type="button" class="tab-link active" data-tab="Empresa">
+                <i class="far fa-building"></i> Empresa
+            </button>
+            <button type="button" class="tab-link" data-tab="Personal">
+                <i class="fas fa-user-friends"></i> Personal
+            </button>
+            <button type="button" class="tab-link" data-tab="Servicios">
+                <i class="fas fa-wrench"></i> Servicios
+            </button>
+            <button type="button" class="tab-link" data-tab="Marcas">
+                <i class="fas fa-tags"></i> Marcas
+            </button>
+            <button type="button" class="tab-link" data-tab="Problemas">
+                <i class="fas fa-exclamation-circle"></i> Problemas
+            </button>
+            <button type="button" class="tab-link" data-tab="Backup">
+                <i class="fas fa-cloud-upload-alt"></i> Backup
+            </button>
+            <button type="button" class="tab-link" data-tab="Notificaciones">
+                <i class="far fa-bell"></i> Notificaciones
+            </button>
+            <button type="button" class="tab-link" data-tab="Sistema">
+                <i class="fas fa-desktop"></i> Sistema
+            </button>
+        </div>
+
+        <!-- Contenido de TODAS las pestañas (fuera del contenedor de botones) -->
+        <div id="Empresa" class="tab-content" style="display: block;">
+            <div class="config-card">
+                <h3 class="section-title">Información de la empresa</h3>
+                <form action="/configuracion/empresa" method="post">
+                    <div class="form-row">
+                        <div class="form-group flex-1">
+                            <label>Nombre de la empresa *</label>
+                            <input type="text" name="nombre" th:value="${empresa.nombre}" required>
+                        </div>
+                        <div class="form-group flex-1">
+                            <label>Email *</label>
+                            <input type="email" name="email" th:value="${empresa.email}" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group flex-1">
+                            <label>Teléfono</label>
+                            <input type="text" name="telefono" th:value="${empresa.telefono}">
+                        </div>
+                        <div class="form-group flex-1">
+                            <label>Dirección</label>
+                            <input type="text" name="direccion" th:value="${empresa.direccion}">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group flex-1">
+                            <label>Sitio web</label>
+                            <input type="text" name="sitioWeb" th:value="${empresa.sitioWeb}">
+                        </div>
+                        <div class="form-group flex-1">
+                            <label>RFC / ID Fiscal</label>
+                            <input type="text" name="rfc" th:value="${empresa.rfc}">
+                        </div>
+                    </div>
+                    <h3 class="section-title mt-4">Configuración comercial</h3>
+                    <div class="form-row">
+                        <div class="form-group flex-1">
+                            <label>Moneda</label>
+                            <select name="moneda">
+                                <option th:value="${empresa.moneda}" th:text="${empresa.moneda}" selected></option>
+                                <option value="MXN">MXN - Pesos</option>
+                                <option value="USD">USD - Dólares</option>
+                            </select>
+                        </div>
+                        <div class="form-group flex-1">
+                            <label>Margen ganancia default (%)</label>
+                            <input type="number" name="margenDefault" th:value="${empresa.margenDefault}">
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">Guardar Cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="Personal" class="tab-content" style="display: none;">
+            <div class="config-card">
+                <h3 class="section-title mb-3">Personal</h3>
+                <div class="table-responsive">
+                    <table class="config-table">
+                        <thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr></thead>
+                        <tbody>
+                        <tr th:each="user : ${personal}">
+                            <td class="fw-600" th:text="${user.nombre}"></td>
+                            <td class="text-gray" th:text="${user.correo}"></td>
+                            <td th:text="${user.rol}"></td>
+                            <td><span class="status-dot active"></span> Activo</td>
+                            <td>
+                                <a th:href="@{'/configuracion/personal/eliminar/' + ${user.id}}" onclick="return confirm('¿Eliminar?')" class="btn-icon"><i class="far fa-trash-alt"></i></a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <hr class="divider">
+                <h3 class="section-title mt-4">Nuevo usuario</h3>
+                <form action="/configuracion/personal" method="post">
+                    <div class="form-row">
+                        <div class="form-group flex-1"><label>Nombre</label><input type="text" name="nombre" required></div>
+                        <div class="form-group flex-1"><label>Correo</label><input type="email" name="correo" required></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group flex-1">
+                            <label>Rol</label>
+                            <select name="rol">
+                                <option value="Administrador">Administrador</option>
+                                <option value="Técnico">Técnico</option>
+                                <option value="Recepcionista">Recepcionista</option>
+                            </select>
+                        </div>
+                        <div class="form-group flex-1"><label>Contraseña</label><input type="password" name="passwordHash" required></div>
+                    </div>
+                    <div class="form-actions"><button type="submit" class="btn-primary">Guardar</button></div>
+                </form>
+            </div>
+        </div>
+
+        <div id="Servicios" class="tab-content" style="display: none;">
+            <div class="config-card">
+                <div class="flex-header">
+                    <h3 class="section-title mb-3">Categorías de servicios</h3>
+                    <button class="btn-outline-sm">Agregar categoría</button>
+                </div>
+                <table class="config-table">
+                    <thead><tr><th>Categoría</th><th>Precio base</th><th>Tiempo estimado</th><th>Acciones</th></tr></thead>
+                    <tbody>
+                    <tr><td>Cambio de pantalla</td><td>$80</td><td>1 hora</td><td><button class="btn-icon"><i class="far fa-edit"></i></button></td></tr>
+                    <tr><td>Reparación por agua</td><td>$120</td><td>2 horas</td><td><button class="btn-icon"><i class="far fa-edit"></i></button></td></tr>
+                    <tr><td>Cambio de batería</td><td>$60</td><td>45 minutos</td><td><button class="btn-icon"><i class="far fa-edit"></i></button></td></tr>
+                    <tr><td>Reparación de software</td><td>$50</td><td>30 minutos</td><td><button class="btn-icon"><i class="far fa-edit"></i></button></td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-title mt-4">Estados de servicio</h3>
+                <div class="status-list">
+                    <div class="status-item"><span class="dot orange"></span> Pendiente</div>
+                    <div class="status-item"><span class="dot yellow"></span> En diagnóstico</div>
+                    <div class="status-item"><span class="dot purple"></span> En espera de piezas</div>
+                    <div class="status-item"><span class="dot blue"></span> En reparación</div>
+                    <div class="status-item"><span class="dot green"></span> Reparado</div>
+                    <div class="status-item"><span class="dot teal"></span> Listo para entregar</div>
+                    <div class="status-item"><span class="dot gray"></span> Entregado</div>
+                </div>
+                <div class="form-actions"><button class="btn-primary">Guardar cambios</button></div>
+            </div>
+        </div>
+
+        <div id="Marcas" class="tab-content" style="display: none;">
+            <div class="config-card">
+                <h3 class="section-title mb-3">Tipos de dispositivos</h3>
+                <div class="chips-container">
+                    <span class="chip">Celular <i class="fas fa-times"></i></span>
+                    <span class="chip">Laptop <i class="fas fa-times"></i></span>
+                    <span class="chip">PC <i class="fas fa-times"></i></span>
+                    <span class="chip">Tablet <i class="fas fa-times"></i></span>
+                    <span class="chip">Consola <i class="fas fa-times"></i></span>
+                    <button class="add-chip-btn">+ Agregar</button>
+                </div>
+
+                <h3 class="section-title mt-4">Marcas de productos</h3>
+                <div class="list-box">
+                    <div class="list-item">Apple <button class="btn-icon"><i class="far fa-trash-alt"></i></button></div>
+                    <div class="list-item">Samsung <button class="btn-icon"><i class="far fa-trash-alt"></i></button></div>
+                    <div class="list-item">Xiaomi <button class="btn-icon"><i class="far fa-trash-alt"></i></button></div>
+                    <div class="list-item">Motorola <button class="btn-icon"><i class="far fa-trash-alt"></i></button></div>
+                    <div class="list-item">Huawei <button class="btn-icon"><i class="far fa-trash-alt"></i></button></div>
+                    <div class="list-item add-item"><input type="text" placeholder="Agregar nueva marca..."><button class="btn-mini">Agregar</button></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="Problemas" class="tab-content" style="display: none;">
+            <div class="config-card">
+                <h3 class="section-title mb-3">Problemas comunes (Checklist)</h3>
+                <p class="text-gray mb-3">Estos problemas aparecerán al crear un nuevo servicio.</p>
+                <div class="list-box">
+                    <div class="list-item">No enciende <button class="btn-icon"><i class="far fa-trash-alt"></i></button></div>
+                    <div class="list-item">Se apaga solo <button class="btn-icon"><i class="far fa-trash-alt"></i></button></div>
+                    <div class="list-item">Pantalla rota <button class="btn-icon"><i class="far fa-trash-alt"></i></button></div>
+                    <div class="list-item">Batería no carga <button class="btn-icon"><i class="far fa-trash-alt"></i></button></div>
+                    <div class="list-item">Sobrecalentamiento <button class="btn-icon"><i class="far fa-trash-alt"></i></button></div>
+                    <div class="list-item">Lentitud <button class="btn-icon"><i class="far fa-trash-alt"></i></button></div>
+                    <div class="list-item">No carga puerto <button class="btn-icon"><i class="far fa-trash-alt"></i></button></div>
+                    <div class="list-item add-item"><input type="text" placeholder="Agregar nuevo problema..."><button class="btn-mini">Agregar</button></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="Backup" class="tab-content" style="display: none;">
+            <div class="config-card">
+                <h3 class="section-title">Sistema de backup</h3>
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>Frecuencia de backup</label>
+                        <select><option>Diario</option><option>Semanal</option><option>Mensual</option></select>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label>Conservar backups</label>
+                        <select><option>30 días</option><option>60 días</option></select>
+                    </div>
+                </div>
+
+                <div class="backup-status">
+                    <div>
+                        <span class="label-sm">Último backup:</span>
+                        <strong class="val-lg">15/03/2024 - 02:00 AM</strong>
+                    </div>
+                    <div>
+                        <span class="label-sm">Tamaño del backup:</span>
+                        <strong class="val-lg">450 MB</strong>
+                    </div>
+                </div>
+
+                <button class="btn-primary w-100 mt-3"><i class="fas fa-cloud-upload-alt"></i> Realizar backup ahora</button>
+
+                <h3 class="section-title mt-4">Herramientas de mantenimiento</h3>
+                <ul class="maintenance-list">
+                    <li><span>Limpiar caché del sistema</span> <button class="btn-outline-sm">Ejecutar</button></li>
+                    <li><span>Verificar integridad base de datos</span> <button class="btn-outline-sm">Ejecutar</button></li>
+                    <li><span>Ver estadísticas de uso</span> <button class="btn-outline-sm">Ver</button></li>
+                    <li class="danger-zone"><span>Eliminar datos de prueba</span> <button class="btn-danger-sm">Eliminar</button></li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="Notificaciones" class="tab-content" style="display: none;">
+            <div class="config-card">
+                <h3 class="section-title">Sistema de notificaciones</h3>
+                <div class="toggles-container full-width">
+                    <div class="toggle-row border-bottom">
+                        <div>
+                            <strong>Alertas de stock bajo</strong>
+                            <p class="text-sm text-gray">Notificar cuando un producto alcance el stock mínimo</p>
+                        </div>
+                        <label class="switch"><input type="checkbox" checked><span class="slider round"></span></label>
+                    </div>
+                    <div class="toggle-row border-bottom">
+                        <div>
+                            <strong>Recordatorios de servicios atrasados</strong>
+                            <p class="text-sm text-gray">Alertar cuando un servicio exceda la fecha estimada</p>
+                        </div>
+                        <label class="switch"><input type="checkbox" checked><span class="slider round"></span></label>
+                    </div>
+                    <div class="toggle-row border-bottom">
+                        <div>
+                            <strong>Notificaciones de clientes nuevos</strong>
+                            <p class="text-sm text-gray">Notificar cuando se registra un nuevo cliente</p>
+                        </div>
+                        <label class="switch"><input type="checkbox"><span class="slider round"></span></label>
+                    </div>
+                    <div class="toggle-row border-bottom">
+                        <div>
+                            <strong>Alertas de pagos pendientes</strong>
+                            <p class="text-sm text-gray">Recordatorios de servicios con saldo pendiente</p>
+                        </div>
+                        <label class="switch"><input type="checkbox" checked><span class="slider round"></span></label>
+                    </div>
+                    <div class="toggle-row">
+                        <div>
+                            <strong>Promociones automáticas a clientes</strong>
+                            <p class="text-sm text-gray">Enviar promociones por email a clientes frecuentes</p>
+                        </div>
+                        <label class="switch"><input type="checkbox"><span class="slider round"></span></label>
+                    </div>
+                </div>
+                <div class="form-actions"><button class="btn-primary">Guardar configuración</button></div>
+
+                <h3 class="section-title mt-4">Configuración de email</h3>
+                <div class="form-row">
+                    <div class="form-group flex-1"><label>SMTP Server</label><input type="text" value="smtp.gmail.com"></div>
+                    <div class="form-group flex-1"><label>Puerto</label><input type="text" value="587"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group flex-1"><label>Email</label><input type="email" value="notificaciones@reparaya.com"></div>
+                    <div class="form-group flex-1"><label>Contraseña</label><input type="password" value="********"></div>
+                </div>
+                <button class="btn-outline-sm">Probar conexión</button>
+            </div>
+        </div>
+
+        <div id="Sistema" class="tab-content" style="display: none;">
+
+            <h3>Preferencias del sistema</h3>
+
+            <div class="form-group">
+                <label for="tema">Tema</label>
+                <select id="tema" name="tema">
+                    <option value="Claro" selected>Claro</option>
+                    <option value="Oscuro">Oscuro</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" checked>
+                    Activar animaciones
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" checked>
+                    Activar sonidos
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label for="fecha">Formato de fecha</label>
+                <select id="fecha">
+                    <option selected>dd/MM/yyyy</option>
+                    <option>MM-dd-yyyy</option>
+                    <option>yyyy-MM-dd</option>
+                </select>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function openTab(evt, tabName) {
+        var i, tabcontent, tablinks;
+
+        tabcontent = document.getElementsByClassName("tab-content");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+
+        tablinks = document.getElementsByClassName("tab-link");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].classList.remove("active");
+        }
+
+        document.getElementById(tabName).style.display = "block";
+        evt.currentTarget.classList.add("active");
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.tab-link').forEach(function(button) {
+            button.addEventListener('click', function(e) {
+                openTab(e, this.dataset.tab);
+            });
+        });
+    });
+</script>
+
+
+</body>
+</html>

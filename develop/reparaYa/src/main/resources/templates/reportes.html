@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportes - Repara Ya</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" th:href="@{/css/reportes.css}">
+    <link rel="stylesheet" th:href="@{/css/global.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<div class="dashboard-container">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="logo"><i class="fas fa-tools"></i> <span>Repara Ya</span></div>
+        <ul class="menu-items">
+            <li><a href="/dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="/servicios"><i class="fas fa-wrench"></i> Servicios</a></li>
+            <li><a href="/gastos"><i class="fas fa-file-invoice-dollar"></i> Gastos</a></li>
+            <li><a href="/clientes"><i class="fas fa-users"></i> Clientes</a></li>
+            <li><a href="/inventario"><i class="fas fa-box"></i> Inventario</a></li>
+            <li class="active"><a href="/reportes"><i class="fas fa-chart-bar"></i> Reportes</a></li>
+            <li class="bottom-item"><a href="/configuracion"><i class="fas fa-cog"></i> Configuración</a></li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+
+        <div class="top-bar">
+            <div class="search-wrapper global-search">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Buscar...">
+            </div>
+            <div class="user-profile">
+                <div class="notif-badge"><i class="far fa-bell"></i><span class="dot"></span></div>
+                <div class="avatar-circle">AD</div>
+                <span class="user-name">Admin</span>
+            </div>
+        </div>
+
+        <!-- HEADER & BOTONES EXPORTAR -->
+        <div class="report-header-row">
+            <div>
+                <h1>Reportes</h1>
+                <p>Analiza el desempeño y métricas del negocio</p>
+            </div>
+            <div class="actions-row">
+                <button class="btn-outline-icon" onclick="exportar('excel')">
+                    <i class="fas fa-file-excel text-green"></i> Exportar Excel
+                </button>
+                <button class="btn-outline-icon" onclick="exportar('pdf')">
+                    <i class="fas fa-file-pdf text-red"></i> Exportar PDF
+                </button>
+            </div>
+        </div>
+
+        <!-- FILTROS -->
+        <div class="filters-card">
+            <div class="filter-group">
+                <label>Tipo de reporte</label>
+                <select><option>General</option><option>Servicios</option><option>Financiero</option></select>
+            </div>
+            <form action="/reportes" method="get" class="filters-card">
+                <div class="filter-group">
+                    <label>Fecha inicio</label>
+                    <input type="date" id="fechaInicio" name="fechaInicio" th:value="${fechaInicio}" required>
+                </div>
+                <div class="filter-group">
+                    <label>Fecha fin</label>
+                    <input type="date" id="fechaFin" name="fechaFin" th:value="${fechaFin}" required>
+                </div>
+                <button type="submit" class="btn-primary btn-generate">Generar</button>
+            </form>
+        </div>
+
+        <!-- KPIs -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-icon green-bg"><i class="fas fa-dollar-sign"></i></div>
+                <div><span class="kpi-title">Ingresos</span><span class="kpi-value text-green" th:text="'$' + ${data.ingresos}"></span></div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon red-bg"><i class="fas fa-file-invoice"></i></div>
+                <div><span class="kpi-title">Gastos</span><span class="kpi-value text-red" th:text="'$' + ${data.gastos}"></span></div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon blue-bg"><i class="fas fa-chart-line"></i></div>
+                <div><span class="kpi-title">Ganancia</span><span class="kpi-value text-blue" th:text="'$' + ${data.ganancia}"></span></div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon purple-bg"><i class="fas fa-check-circle"></i></div>
+                <div><span class="kpi-title">Servicios</span><span class="kpi-value text-purple" th:text="${data.serviciosTotales}"></span></div>
+            </div>
+        </div>
+
+        <!-- FILA 1: BARRAS & PASTEL CLÁSICO -->
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3>Servicios por mes</h3>
+                <div class="bar-chart-container">
+                    <div class="y-axis"><span>60</span><span>45</span><span>30</span><span>15</span><span>0</span></div>
+                    <div class="bars-wrapper">
+                        <div class="bar-group" th:each="entry : ${data.serviciosPorMes}">
+                            <div class="bar" th:style="'height:' + ${entry.value * 1.5} + '%'" th:attr="data-tooltip=${entry.value}"></div>
+                            <span class="x-label" th:text="${entry.key}"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <h3>Distribución por estado</h3>
+                <div style="height: 250px; width: 100%; position: relative;">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- FILA 2: LÍNEAS & DISPOSITIVOS (AGREGADO) -->
+        <div class="charts-grid mt-4">
+            <div class="chart-card">
+                <h3>Ingresos vs Gastos</h3>
+                <div style="height: 250px; width: 100%;">
+                    <canvas id="financeChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <h3>Dispositivos más reparados</h3>
+                <div class="horiz-bars-container">
+                    <div class="hbar-row" th:each="dev : ${data.dispositivosTop}">
+                        <span class="hbar-label" th:text="${dev.key}">iPhone</span>
+                        <div class="hbar-track">
+                            <div class="hbar-fill" th:style="'width:' + ${dev.value * 5} + '%'"></div>
+                        </div>
+                        <span class="hbar-val" th:text="${dev.value}">15</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FILA 3: DESEMPEÑO TÉCNICOS (AGREGADO) -->
+        <div class="section-card mt-4">
+            <h3>Desempeño por técnico</h3>
+            <div class="tech-grid">
+                <div class="tech-card" th:each="tec : ${data.tecnicos}">
+                    <div class="tech-avatar" th:text="${tec.iniciales}">MG</div>
+                    <div class="tech-info">
+                        <span class="tech-name" th:text="${tec.nombre}">Nombre</span>
+                        <span class="tech-role" th:text="${tec.serviciosCompletados} + ' servicios completados'"></span>
+                    </div>
+                    <div class="tech-bar-container">
+                        <div class="tech-bar-fill" th:style="'width:' + ${tec.serviciosCompletados > 0 ? (tec.serviciosCompletados * 10) : 0} + '%'"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script th:inline="javascript">
+    function exportar(tipo) {
+        const inicio = document.getElementById('fechaInicio').value;
+        const fin = document.getElementById('fechaFin').value;
+
+        if(!inicio || !fin) {
+            alert("Por favor selecciona un rango de fechas y da click en Generar primero.");
+            return;
+        }
+
+        // Redirige a la ruta de descarga con las fechas
+        window.location.href = `/reportes/exportar/${tipo}?inicio=${inicio}&fin=${fin}`;
+    }
+    /* Grafico de barras - Ingresos vs Gastos */
+    const meses = /*[[${data.chartMeses}]]*/ [];
+    const ingresos = /*[[${data.chartIngresos}]]*/ [];
+    const gastos = /*[[${data.chartGastos}]]*/ [];
+
+    const ctx = document.getElementById('financeChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: meses,
+            datasets: [
+                {
+                    label: 'Ingresos',
+                    data: ingresos,
+                    borderColor: '#22c55e', // Verde
+                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                    tension: 0.3,
+                    fill: true
+                },
+                {
+                    label: 'Gastos',
+                    data: gastos,
+                    borderColor: '#ef4444', // Rojo
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    tension: 0.3,
+                    fill: true,
+                    borderDash: [5, 5]
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+
+    /* Grafico de pastel - Distribución por estados */
+    const mapaEstados = /*[[${data.distribucionEstado}]]*/ {};
+
+    const estadoLabels = Object.keys(mapaEstados);
+    const estadoValues = Object.values(mapaEstados);
+
+    const colorMap = {
+        'Pendiente': '#ef4444',       // Rojo
+        'En Reparación': '#3b82f6',   // Azul
+        'En Diagnóstico': '#f59e0b',  // Amarillo/Naranja
+        'Entregado': '#22c55e',       // Verde
+        'En espera': '#8b5cf6'        // Morado
+    };
+
+    const estadoColors = estadoLabels.map(label => colorMap[label] || '#9ca3af');
+
+    const ctxPie = document.getElementById('statusChart').getContext('2d');
+    new Chart(ctxPie, {
+        type: 'doughnut',
+        data: {
+            labels: estadoLabels,
+            datasets: [{
+                data: estadoValues,
+                backgroundColor: estadoColors,
+                borderWidth: 0,
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: {
+                        usePointStyle: true,
+                        boxWidth: 10
+                    }
+                }
+            },
+            cutout: '70%'
+        }
+    });
+</script>
+
+</body>
+</html>

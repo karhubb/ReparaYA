@@ -1,0 +1,8 @@
+Datos MySQL
+MYSQL_ROOT_PASSWORD = reparaya
+MYSQL_DATABASE = reparaya_db
+MYSQL_USER = admin
+MYSQL_PASSWORD = 12345
+
+docker run -d -p 3306:3306 --name reparaYa -e MYSQL_ROOT_PASSWORD=reparaya -e MYSQL_DATABASE=reparaya_db -e MYSQL_USER=admin -e MYSQL_PASSWORD=12345 mysql:9.5.0
+

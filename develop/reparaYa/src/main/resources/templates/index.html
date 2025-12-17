@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Login - ReparaYA</title>
+    <link rel="stylesheet" th:href="@{/css/login.css}">
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="login-card">
+    <div class="logo-container">
+        <img th:src="@{/img/logo.png}" alt="ReparaYA Logo" class="logo-img"
+             onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\'fas fa-cat\' style=\'font-size:40px; color:#2563EB\'></i>'">
+    </div>
+
+    <h2>ReparaYA</h2>
+
+    <div th:if="${error}" class="error-msg">
+        <i class="fas fa-exclamation-circle"></i>
+        <span th:text="${error}"></span>
+    </div>
+
+    <form action="/login" method="POST">
+        <div class="form-group">
+            <label>Usuario</label>
+            <div class="input-wrapper">
+                <i class="far fa-user input-icon"></i>
+                <input type="text" name="correo" placeholder="admin@reparaya.com" required>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Contraseña</label>
+            <div class="input-wrapper">
+                <i class="fas fa-lock input-icon"></i>
+                <input type="password" name="password" id="password" placeholder="••••••••" required>
+                <i class="far fa-eye toggle-btn" onclick="togglePass()" id="eyeIcon"></i>
+            </div>
+        </div>
+
+        <div class="options">
+            <label>
+                <input type="checkbox" name="remember"> Recordar sesión
+            </label>
+            <a href="#" class="forgot">¿Olvidaste tu contraseña?</a>
+        </div>
+
+        <button type="submit" class="btn-login">Ingresar</button>
+    </form>
+
+    <div class="footer">
+        © 2025 ReparaYA
+    </div>
+</div>
+
+<script>
+    function togglePass() {
+        const input = document.getElementById('password');
+        const icon = document.getElementById('eyeIcon');
+
+        if (input.type === "password") {
+            input.type = "text";
+            // Cambiar icono a "ojo tachado"
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = "password";
+            // Volver a icono "ojo normal"
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+</script>
+</body>
+</html>

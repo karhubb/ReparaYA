@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gastos - Repara Ya</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" th:href="@{/css/global.css}">
+    <link rel="stylesheet" th:href="@{/css/gastos.css}"> <!-- Nuevo CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="dashboard-container">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="logo"><i class="fas fa-tools"></i> <span>Repara Ya</span></div>
+        <ul class="menu-items">
+            <li><a href="/dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="/servicios"><i class="fas fa-wrench"></i> Servicios</a></li>
+            <li class="active"><a href="/gastos"><i class="fas fa-file-invoice-dollar"></i> Gastos</a></li>
+            <li><a href="/clientes"><i class="fas fa-users"></i> Clientes</a></li>
+            <li><a href="/inventario"><i class="fas fa-box"></i> Inventario</a></li>
+            <li><a href="/reportes"><i class="fas fa-chart-bar"></i> Reportes</a></li>
+            <li class="bottom-item"><a href="/configuracion"><i class="fas fa-cog"></i> Configuración</a></li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="search-wrapper global-search">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Buscar servicios, clientes, dispositivos...">
+            </div>
+            <div class="user-profile">
+                <div class="notif-badge"><i class="far fa-bell"></i><span class="dot"></span></div>
+                <div class="avatar-circle">AD</div>
+                <span class="user-name">Admin</span>
+            </div>
+        </div>
+
+        <!-- Header -->
+        <div class="page-header">
+            <div>
+                <h1>Gastos</h1>
+                <p>Gestiona y controla los gastos del negocio</p>
+            </div>
+            <!-- BOTÓN NUEVO GASTO (Abre el Modal) -->
+            <button class="btn-primary" onclick="abrirModal('modalNuevoGasto')">
+                <i class="fas fa-plus"></i> Nuevo gasto
+            </button>
+        </div>
+
+        <!-- Filtros Superiores -->
+        <div class="filters-row">
+            <select class="filter-select"><option>Todas las categorías</option></select>
+            <select class="filter-select no-border"><option>Mes actual</option></select>
+        </div>
+
+        <!-- KPIs Gastos -->
+        <div class="gastos-kpi-grid">
+            <div class="gasto-kpi-card">
+                <div class="kpi-icon-circle red"><i class="fas fa-chart-line" style="transform: scaleY(-1);"></i></div>
+                <div>
+                    <span class="kpi-label">Total gastos</span>
+                    <span class="kpi-number" th:text="'$' + ${totalGastos}">$8500.00</span>
+                </div>
+            </div>
+            <div class="gasto-kpi-card">
+                <div class="kpi-icon-circle blue"><i class="fas fa-file-alt"></i></div>
+                <div>
+                    <span class="kpi-label">Total registros</span>
+                    <span class="kpi-number" th:text="${totalRegistros}">5</span>
+                </div>
+            </div>
+            <div class="gasto-kpi-card">
+                <div class="kpi-icon-circle purple"><i class="fas fa-dollar-sign"></i></div>
+                <div>
+                    <span class="kpi-label">Promedio mensual</span>
+                    <span class="kpi-number" th:text="'$' + ${#numbers.formatDecimal(promedioMensual, 1, 2)}">$2833.33</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección Barras de Progreso -->
+        <div class="gastos-card mb-4">
+            <h3 class="card-title">Gastos por categoría</h3>
+            <div class="progress-list">
+                <div class="progress-item">
+                    <div class="prog-label"><span>Inventario</span></div>
+                    <div class="progress-bar"><div class="fill blue" th:style="'width:' + ${pctInventario} + '%'"></div></div>
+                </div>
+                <div class="progress-item">
+                    <div class="prog-label"><span>Servicios públicos</span></div>
+                    <div class="progress-bar"><div class="fill blue" th:style="'width:' + ${pctServicios} + '%'"></div></div>
+                </div>
+                <div class="progress-item">
+                    <div class="prog-label"><span>Herramientas</span></div>
+                    <div class="progress-bar"><div class="fill blue" th:style="'width:' + ${pctHerramientas} + '%'"></div></div>
+                </div>
+                <div class="progress-item">
+                    <div class="prog-label"><span>Operativos</span></div>
+                    <div class="progress-bar"><div class="fill blue" th:style="'width:' + ${pctOperativos} + '%'"></div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla Historial -->
+        <div class="gastos-card">
+            <h3 class="card-title mb-3">Historial de gastos</h3>
+            <div class="table-responsive">
+                <table class="gastos-table">
+                    <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Categoría</th>
+                        <th>Descripción</th>
+                        <th>Comprobante</th>
+                        <th>Monto</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="gasto : ${gastos}"
+                            class="clickable-row"
+                            th:data-id="${gasto.id}"
+                            th:data-fecha="${gasto.fecha}"
+                            th:data-monto="${gasto.monto}"
+                            th:data-categoria="${gasto.categoria}"
+                            th:data-descripcion="${gasto.descripcion}"
+                            th:data-comprobante="${gasto.comprobante}"
+
+                            onclick="editarGasto(this)">
+
+                            <td th:text="${gasto.fecha}"></td>
+                            <td><span class="cat-badge" th:classappend="'cat-' + ${gasto.getCategoriaCss()}" th:text="${gasto.categoria}"></span></td>
+                            <td th:text="${gasto.descripcion}"></td>
+                            <td class="text-gray" th:text="${gasto.comprobante}"></td>
+                            <td class="fw-700" th:text="'$' + ${gasto.monto}"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL NUEVO GASTO -->
+<div id="modalNuevoGasto" class="modal-overlay">
+    <div class="modal-content modal-medium">
+        <div class="modal-header">
+            <div><h2>Nuevo gasto</h2><p class="modal-subtitle">Agrega un nuevo gasto</p></div>
+            <span class="close-btn" onclick="cerrarModal('modalNuevoGasto')">&times;</span>
+        </div>
+
+        <form action="/gastos/guardar" method="post">
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>Fecha *</label>
+                        <input type="date" name="fecha" required>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label>Monto *</label>
+                        <input type="number" name="monto" step="0.01" placeholder="0" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>Categoría *</label>
+                        <select name="categoria">
+                            <option value="Inventario">Inventario</option>
+                            <option value="Servicios públicos">Servicios públicos</option>
+                            <option value="Herramientas">Herramientas</option>
+                            <option value="Operativos">Operativos</option>
+                            <option value="Renta">Renta</option>
+                            <option value="Salarios">Salarios</option>
+                            <option value="Marketing">Marketing</option>
+                        </select>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label>Comprobante</label>
+                        <input type="text" name="comprobante" placeholder="FAC-001, REC-001...">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Descripción *</label>
+                    <textarea name="descripcion" rows="2" placeholder="Describe el gasto..." required></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="cerrarModal('modalNuevoGasto')">Cancelar</button>
+                <button type="submit" class="btn-primary">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL EDITAR GASTO (SIMULADO) -->
+<div id="modalEditarGasto" class="modal-overlay">
+    <div class="modal-content modal-medium">
+        <div class="modal-header">
+            <div><h2>Editar gasto</h2><p class="modal-subtitle">Actualiza los detalles del gasto</p></div>
+            <span class="close-btn" onclick="cerrarModal('modalEditarGasto')">&times;</span>
+        </div>
+
+        <form action="/gastos/guardar" method="post">
+            <div class="modal-body">
+                <input type="hidden" id="editId" name="id">
+
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>Fecha *</label>
+                        <input type="date" id="editFecha" name="fecha" required>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label>Monto *</label>
+                        <input type="number" id="editMonto" name="monto" step="0.01" required>
+                    </div>
+                </div>
+
+                <div class="form-row"> <div class="form-group flex-1">
+                    <label>Categoría</label>
+                    <select id="editCategoria" name="categoria">
+                        <option value="Inventario">Inventario</option>
+                        <option value="Servicios públicos">Servicios públicos</option>
+                        <option value="Herramientas">Herramientas</option>
+                        <option value="Operativos">Operativos</option>
+                        <option value="Renta">Renta</option>
+                        <option value="Salarios">Salarios</option>
+                        <option value="Marketing">Marketing</option>
+                    </select>
+                </div>
+                    <div class="form-group flex-1">
+                        <label>Comprobante</label>
+                        <input type="text" id="editComprobante" name="comprobante">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Descripción</label>
+                    <textarea id="editDescripcion" name="descripcion" rows="2"></textarea>
+                </div>
+            </div>
+
+            <div class="modal-footer space-between">
+                <a id="btnEliminarEnModal" href="#" class="btn-danger" style="text-decoration:none; padding:10px 20px;">Eliminar</a>
+
+                <div class="flex-gap">
+                    <button type="button" class="btn-secondary" onclick="cerrarModal('modalEditarGasto')">Cancelar</button>
+                    <button type="submit" class="btn-primary">Actualizar</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL ELIMINAR -->
+<div id="modalEliminarGasto" class="modal-overlay" style="z-index: 10000;">
+    <div class="modal-content small-modal">
+        <div class="modal-header">
+            <h3 style="color:#ef4444;margin:0;">¿Estás seguro?</h3>
+        </div>
+        <div class="modal-body"><p>Se eliminará este gasto permanentemente.</p></div>
+        <div class="modal-footer center-footer">
+            <button class="btn-secondary" onclick="cerrarModal('modalEliminarGasto')">Cancelar</button>
+            <button class="btn-danger" onclick="alert('Gasto eliminado'); cerrarModal('modalEliminarGasto'); cerrarModal('modalEditarGasto');">Eliminar</button>
+        </div>
+    </div>
+</div>
+
+<!-- SCRIPT JAVASCRIPT (FUNDAMENTAL) -->
+<script>
+    function abrirModal(id) {
+        const modal = document.getElementById(id);
+        if(modal) modal.style.display = 'flex';
+    }
+
+    function cerrarModal(id) {
+        const modal = document.getElementById(id);
+        if(modal) modal.style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal-overlay')) {
+            event.target.style.display = "none";
+        }
+    }
+
+    function editarGasto(fila) {
+        // 1. Leer los datos guardados en la fila (data-*)
+        const id = fila.getAttribute('data-id');
+        const fecha = fila.getAttribute('data-fecha');
+        const monto = fila.getAttribute('data-monto');
+        const cat = fila.getAttribute('data-categoria');
+        const desc = fila.getAttribute('data-descripcion');
+        const comp = fila.getAttribute('data-comprobante');
+
+        // 2. Llenar los inputs del modal
+        document.getElementById('editId').value = id;
+        document.getElementById('editFecha').value = fecha;
+        document.getElementById('editMonto').value = monto;
+        document.getElementById('editCategoria').value = cat;
+        document.getElementById('editDescripcion').value = desc;
+        document.getElementById('editComprobante').value = (comp && comp !== 'null') ? comp : '';
+
+        // 3. Configurar el botón de eliminar de este modal
+        const btnEliminar = document.getElementById('btnEliminarEnModal');
+        btnEliminar.href = '/gastos/eliminar/' + id;
+
+        // El botón eliminar preguntará confirmación antes de irse
+        btnEliminar.onclick = function(e) {
+            if(!confirm('¿Estás seguro de eliminar este gasto permanentemente?')) {
+                e.preventDefault();
+            }
+        };
+
+        // 4. Abrir el modal
+        abrirModal('modalEditarGasto');
+    }
+</script>
+
+</body>
+</html>

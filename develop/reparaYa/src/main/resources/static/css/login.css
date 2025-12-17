@@ -1,0 +1,185 @@
+:root {
+    --primary: #2563EB;
+    --bg-body: #F3F4F6;
+    --text-gray: #6B7280;
+    --text-dark: #1F2937;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+
+body {
+    background-color: var(--bg-body);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    padding: 20px;
+}
+
+/* Tarjeta de Login */
+.login-card {
+    background: white;
+    width: 100%;
+    max-width: 400px;
+    padding: 40px 30px;
+    border-radius: 12px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    text-align: center;
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* LOGO (Imagen Real) */
+.logo-container {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* Ajusta la imagen sin deformarla */
+    /* Si tu logo no es redondo, quita la siguiente línea */
+    border-radius: 50%;
+}
+
+h2 { margin-bottom: 25px; color: var(--text-dark); font-weight: 600; }
+
+/* Inputs */
+.form-group { margin-bottom: 20px; text-align: left; }
+label { display: block; font-size: 14px; color: #374151; margin-bottom: 8px; font-weight: 500; }
+
+.input-wrapper { position: relative; }
+
+/* Icono Izquierdo (Usuario/Candado) */
+.input-wrapper .input-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-gray);
+    pointer-events: none;
+    font-size: 16px;
+}
+
+/* OJO: Icono Derecho (Ver contraseña) */
+.input-wrapper .toggle-btn {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: var(--text-gray);
+    font-size: 16px;
+    padding: 5px; /* Área de click más grande */
+}
+.input-wrapper .toggle-btn:hover { color: var(--primary); }
+
+/* Estilos del Input */
+input {
+    width: 100%;
+    padding: 12px 12px 12px 45px; /* Espacio para icono izquierdo */
+    border: 1px solid #D1D5DB;
+    border-radius: 8px;
+    font-size: 16px;
+    outline: none;
+    transition: 0.2s;
+    color: var(--text-dark);
+}
+input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+
+/* 🔴 TRUCO: Ocultar el ojo nativo de Windows/Edge/Chrome */
+input::-ms-reveal,
+input::-ms-clear {
+    display: none;
+}
+
+/* Botón */
+.btn-login {
+    width: 100%; padding: 14px;
+    background: var(--primary); color: white;
+    border: none; border-radius: 8px;
+    font-size: 16px; font-weight: 600; cursor: pointer;
+    transition: 0.2s;
+}
+.btn-login:hover { background-color: #1d4ed8; }
+.btn-login:active { transform: scale(0.98); }
+
+/* Extras */
+.options { display: flex; justify-content: space-between; margin-bottom: 25px; font-size: 14px; color: var(--text-gray); }
+.options label { display: flex; align-items: center; gap: 8px; margin: 0; cursor: pointer; }
+.forgot { color: var(--primary); text-decoration: none; font-weight: 500; }
+.footer { margin-top: 30px; font-size: 12px; color: #9CA3AF; }
+
+.error-msg {
+    background: #FEF2F2; color: #DC2626; padding: 10px;
+    border-radius: 6px; font-size: 14px; margin-bottom: 20px;
+    border: 1px solid #FECACA; display: flex; align-items: center; gap: 8px;
+}
+/* =========================================
+   MODO TABLET Y MÓVIL (Responsivo)
+   ========================================= */
+@media (max-width: 1024px) {
+
+    /* 1. Sidebar Compacta (Solo Iconos) */
+    .sidebar {
+        width: 80px; /* Se hace delgada */
+        padding: 20px 10px;
+    }
+
+    .sidebar .logo span,
+    .sidebar .menu-items a span,
+    .sidebar .bottom-item a span {
+        display: none; /* Oculta el texto, deja solo iconos */
+    }
+
+    .sidebar .logo i {
+        font-size: 28px;
+        margin: 0 auto;
+        display: block;
+    }
+
+    .sidebar .menu-items a {
+        justify-content: center; /* Centra los iconos */
+        padding: 15px 0;
+    }
+
+    .sidebar .menu-items a i {
+        margin-right: 0;
+        font-size: 24px; /* Iconos más grandes para el dedo */
+    }
+
+    /* 2. Ajuste del Contenido Principal */
+    .main-content {
+        margin-left: 80px; /* Se ajusta al nuevo ancho del sidebar */
+        width: calc(100% - 80px);
+    }
+
+    /* 3. Botones y Inputs "Touch-Friendly" (Más grandes) */
+    button, .btn, .btn-login, .btn-camera {
+        min-height: 50px; /* Altura mínima para acertar con el dedo */
+        font-size: 16px;
+    }
+
+    input, select {
+        padding: 12px; /* Más espacio para escribir */
+        font-size: 16px;
+    }
+
+    /* 4. Tablas con Scroll Horizontal */
+    /* Esto evita que la tabla se rompa si tiene muchas columnas */
+    .table-responsive {
+        display: block;
+        width: 100%;
+        overflow-x: auto; /* Permite deslizar con el dedo hacia los lados */
+        -webkit-overflow-scrolling: touch;
+    }
+}

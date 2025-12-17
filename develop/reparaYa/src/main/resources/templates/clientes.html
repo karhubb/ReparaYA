@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clientes - Repara Ya</title>
+    <link rel="stylesheet" th:href="@{/css/global.css}">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" th:href="@{/css/clientes.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="dashboard-container">
+
+    <div class="sidebar">
+        <div class="logo">
+            <i class="fas fa-tools"></i> <span>Repara Ya</span>
+        </div>
+        <ul class="menu-items">
+            <li><a href="/dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="/servicios"><i class="fas fa-wrench"></i> Servicios</a></li>
+            <li><a href="/gastos"><i class="fas fa-file-invoice-dollar"></i> Gastos</a></li>
+            <li class="active"><a href="/clientes"><i class="fas fa-users"></i> Clientes</a></li>
+            <li><a href="/inventario"><i class="fas fa-box"></i> Inventario</a></li>
+            <li><a href="/reportes"><i class="fas fa-chart-bar"></i> Reportes</a></li>
+            <li class="bottom-item"><a href="/configuracion"><i class="fas fa-cog"></i> Configuración</a></li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <div class="top-bar client-top-bar">
+            <div class="search-wrapper global-search">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Buscar en todo el sistema...">
+            </div>
+            <div class="user-profile">
+                <div class="notif-badge"><i class="far fa-bell"></i><span class="dot"></span></div>
+                <div class="avatar-circle">AD</div>
+                <span class="user-name">Admin</span>
+            </div>
+        </div>
+
+        <div class="clients-header-section">
+            <div class="header-titles">
+                <h1>Clientes</h1>
+                <p>Gestiona la información de tus clientes</p>
+            </div>
+            <button class="btn-primary" onclick="abrirModal('modalNuevoCliente')">
+                <i class="fas fa-plus"></i> Nuevo Cliente
+            </button>
+        </div>
+
+        <div class="clients-card">
+            <div class="table-toolbar">
+                <div class="search-wrapper table-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="buscadorTabla" placeholder="Buscar por nombre, teléfono o email...">
+                </div>
+                <div class="filter-wrapper">
+                    <select class="filter-select">
+                        <option>Todos los clientes</option>
+                        <option>Nuevos</option>
+                        <option>Frecuentes</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="clients-table">
+                    <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Teléfono</th>
+                        <th>Email</th>
+                        <th class="text-center">Servicios</th>
+                        <th>Última visita</th>
+                        <th>Tipo</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="cliente : ${clientes}" onclick="abrirPerfil(this)" style="cursor: pointer;">
+                        <td>
+                            <div class="client-name-cell">
+                                <span class="fw-600 client-name" th:text="${cliente.nombre}">Nombre</span>
+                                <span class="sub-text client-address" th:text="${cliente.direccion}">Dirección</span>
+                            </div>
+                        </td>
+                        <td class="client-phone" th:text="${cliente.telefono}">555-5555</td>
+                        <td class="text-email client-email" th:text="${cliente.correo}">email@ejemplo.com</td>
+                        <td class="text-center fw-600">0</td>
+                        <td>Hoy</td>
+                        <td>
+                            <span class="badge badge-nuevo">Nuevo</span>
+                        </td>
+                        <td onclick="event.stopPropagation()">
+                            <button class="btn-icon-small"
+                                    th:data-id="${cliente.id}"
+                                    onclick="confirmarEliminarConId(event, this.getAttribute('data-id'))">
+                                <i class="far fa-trash-alt"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modalNuevoCliente" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Nuevo Cliente</h2>
+            <span class="close-btn" onclick="cerrarModal('modalNuevoCliente')">&times;</span>
+        </div>
+
+        <div class="modal-body">
+            <form id="formCliente" action="/clientes/guardar" method="post" enctype="multipart/form-data">
+
+                <div class="form-group">
+                    <label>Nombre completo</label>
+                    <input type="text" name="nombre" class="form-control" required placeholder="Ej. Juan Pérez">
+                </div>
+
+                <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label>Teléfono</label>
+                        <input type="tel" name="telefono" class="form-control" required placeholder="555-1234">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" name="correo" class="form-control" placeholder="email@ejemplo.com">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Dirección</label>
+                    <input type="text" name="direccion" class="form-control" placeholder="Calle, número, colonia">
+                </div>
+
+                <div class="form-group">
+                    <label>Notas</label>
+                    <textarea name="notas" class="form-control" rows="2" placeholder="Notas adicionales..."></textarea>
+                </div>
+
+                <h4 style="margin-top: 15px; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; color: var(--primary);">Documentación (INE)</h4>
+
+                <div class="ine-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="camera-box" style="border: 2px dashed #ccc; border-radius: 8px; background: #f9f9f9; text-align: center; overflow: hidden; position: relative;">
+                        <input type="file" name="archivoIneFrente" id="ineFrenteInput" accept="image/*" capture="environment" style="display: none;" onchange="previewIne(event, 'previewFrente', 'btnFrente')">
+
+                        <div id="btnFrente" onclick="document.getElementById('ineFrenteInput').click()" style="padding: 20px; cursor: pointer;">
+                            <i class="fas fa-camera" style="font-size: 24px; color: #666; margin-bottom: 5px;"></i>
+                            <div style="font-size: 12px; color: #666;">FOTO FRENTE</div>
+                        </div>
+
+                        <div id="previewFrente" style="display: none; height: 100px;">
+                            <img src="" style="width: 100%; height: 100%; object-fit: cover;">
+                            <button type="button" onclick="removeIne('ineFrenteInput', 'previewFrente', 'btnFrente')" style="position: absolute; top: 0; right: 0; background: #EF4444; color: white; border: none; width: 24px; height: 24px;">&times;</button>
+                        </div>
+                    </div>
+
+                    <div class="camera-box" style="border: 2px dashed #ccc; border-radius: 8px; background: #f9f9f9; text-align: center; overflow: hidden; position: relative;">
+                        <input type="file" name="archivoIneReverso" id="ineReversoInput" accept="image/*" capture="environment" style="display: none;" onchange="previewIne(event, 'previewReverso', 'btnReverso')">
+
+                        <div id="btnReverso" onclick="document.getElementById('ineReversoInput').click()" style="padding: 20px; cursor: pointer;">
+                            <i class="fas fa-camera" style="font-size: 24px; color: #666; margin-bottom: 5px;"></i>
+                            <div style="font-size: 12px; color: #666;">FOTO REVERSO</div>
+                        </div>
+
+                        <div id="previewReverso" style="display: none; height: 100px;">
+                            <img src="" style="width: 100%; height: 100%; object-fit: cover;">
+                            <button type="button" onclick="removeIne('ineReversoInput', 'previewReverso', 'btnReverso')" style="position: absolute; top: 0; right: 0; background: #EF4444; color: white; border: none; width: 24px; height: 24px;">&times;</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="cerrarModal('modalNuevoCliente')">Cancelar</button>
+            <button class="btn-primary" onclick="document.getElementById('formCliente').submit()">Guardar Cliente</button>
+        </div>
+    </div>
+</div>
+
+<div id="modalPerfil" class="modal-overlay">
+    <div class="modal-content profile-content">
+        <div class="modal-header no-border">
+            <span class="close-btn" onclick="cerrarModal('modalPerfil')">&times;</span>
+        </div>
+        <div class="profile-header">
+            <div class="profile-avatar-large">C</div>
+            <h2 id="perfilNombre">Cliente</h2>
+            <p id="perfilDireccion" class="text-gray">Dirección</p>
+        </div>
+        <div class="profile-info-list">
+            <div class="info-row"><i class="fas fa-phone"></i> <span id="perfilTelefono">---</span></div>
+            <div class="info-row"><i class="fas fa-envelope"></i> <span id="perfilEmail">---</span></div>
+        </div>
+    </div>
+</div>
+
+<div id="modalEliminar" class="modal-overlay">
+    <div class="modal-content small-modal">
+        <div class="modal-header">
+            <h3>¿Eliminar cliente?</h3>
+        </div>
+        <div class="modal-body">
+            <p>Esta acción no se puede deshacer y borrará su historial.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="cerrarModal('modalEliminar')">Cancelar</button>
+
+            <a id="btnConfirmarEliminar" href="#" class="btn-danger" style="text-decoration:none; padding: 10px 20px; display: inline-block;">Eliminar</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 1. Lógica de Modales
+    function abrirModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal-overlay')) { event.target.style.display = "none"; }
+    }
+
+    // 2. Lógica para ver perfil al hacer clic en la tabla
+    function abrirPerfil(fila) {
+        document.getElementById('perfilNombre').innerText = fila.querySelector('.client-name').innerText;
+        document.getElementById('perfilDireccion').innerText = fila.querySelector('.client-address').innerText;
+        document.getElementById('perfilTelefono').innerText = fila.querySelector('.client-phone').innerText;
+        document.getElementById('perfilEmail').innerText = fila.querySelector('.client-email').innerText;
+        abrirModal('modalPerfil');
+    }
+
+    // 3. Lógica para PREVISUALIZAR FOTOS INE
+    function previewIne(event, previewId, btnId) {
+        const input = event.target;
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById(previewId).style.display = 'block';
+                document.getElementById(previewId).querySelector('img').src = e.target.result;
+                document.getElementById(btnId).style.display = 'none';
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function removeIne(inputId, previewId, btnId) {
+        document.getElementById(inputId).value = ""; // Limpia el input
+        document.getElementById(previewId).style.display = 'none'; // Oculta preview
+        document.getElementById(btnId).style.display = 'block'; // Muestra botón
+    }
+
+    // 4. BUSCADOR EN TIEMPO REAL
+    document.getElementById('buscadorTabla').addEventListener('keyup', function(e) {
+        const busqueda = e.target.value.toLowerCase();
+        const filas = document.querySelectorAll('.clients-table tbody tr');
+
+        filas.forEach(fila => {
+            const texto = fila.innerText.toLowerCase();
+            if(texto.includes(busqueda)) {
+                fila.style.display = '';
+            } else {
+                fila.style.display = 'none';
+            }
+        });
+    });
+
+    function confirmarEliminarConId(event, idCliente) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        // Buscamos el enlace (etiqueta A) en lugar del formulario
+        const btnEliminar = document.getElementById('btnConfirmarEliminar');
+
+        // Le ponemos la ruta correcta
+        btnEliminar.href = '/clientes/eliminar/' + idCliente;
+
+        abrirModal('modalEliminar');
+    }
+</script>
+
+</body>
+</html>
