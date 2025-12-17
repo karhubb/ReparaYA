@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Repara Ya - Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" th:href="@{/css/global.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<div class="dashboard-container">
+
+    <div class="sidebar">
+        <div class="logo">
+            <i class="fas fa-tools"></i> <span>Repara Ya</span>
+        </div>
+
+        <ul class="menu-items">
+            <li class="active"><a href="/dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="/clientes"><i class="fas fa-users"></i> Clientes</a></li>
+            <li><a href="/servicios"><i class="fas fa-wrench"></i> Servicios</a></li>
+            <li><a href="/inventario"><i class="fas fa-box"></i> Inventario</a></li>
+            <li><a href="/gastos"><i class="fas fa-file-invoice-dollar"></i> Gastos</a></li>
+            <li><a href="/reportes"><i class="fas fa-chart-bar"></i> Reportes</a></li>
+            <li class="bottom-item"><a href="/configuracion"><i class="fas fa-cog"></i> Configuración</a></li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+
+        <div class="top-bar">
+            <div class="search-wrapper">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Buscar orden, cliente o IMEI...">
+            </div>
+            <div class="user-profile">
+                <div class="avatar-circle" th:text="${#strings.substring(nombreUsuario,0,1)}">A</div>
+                <div class="user-info">
+                    <span class="user-name" th:text="${nombreUsuario}">Admin</span>
+                    <small class="user-role" th:text="${rolUsuario}">Admin</small>
+                </div>
+                <a href="/logout" title="Cerrar sesión" style="margin-left: 15px; color: #6B7280;">
+                    <i class="fas fa-sign-out-alt"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="header">
+            <div>
+                <h1>Dashboard General</h1>
+                <p>Resumen de actividad del taller</p>
+            </div>
+            <a href="/servicios" class="btn-primary" style="text-decoration:none;">
+                <i class="fas fa-plus"></i> Nueva Orden
+            </a>
+        </div>
+
+        <div class="kpi-container">
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <span class="kpi-label">Pendientes</span>
+                    <span class="kpi-number" th:text="${pendientes}">0</span>
+                </div>
+                <div class="kpi-icon icon-pending"><i class="fas fa-clock"></i></div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <span class="kpi-label">En Proceso</span>
+                    <span class="kpi-number" th:text="${proceso}">0</span>
+                </div>
+                <div class="kpi-icon icon-process"><i class="fas fa-wrench"></i></div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <span class="kpi-label">Completados</span>
+                    <span class="kpi-number" th:text="${completados}">0</span>
+                </div>
+                <div class="kpi-icon icon-complete"><i class="fas fa-check"></i></div>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <div class="content-card table-section">
+                <div class="card-header">
+                    <h3>Últimos Servicios</h3>
+                    <a href="/servicios" class="view-all">Ver todos</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="custom-table"> <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Cliente</th>
+                        <th>Dispositivo</th>
+                        <th>Estado</th>
+                        <th>Fecha</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                        <tbody>
+                        <tr th:each="item : ${servicios}">
+                            <td class="id-col">#<span th:text="${item.id}"></span></td>
+
+                            <td class="fw-500" th:text="${item.cliente?.nombre ?: 'Sin Cliente'}">Juan</td>
+
+                            <td class="text-muted" th:text="${item.marca} + ' ' + ${item.modelo}">iPhone 12</td>
+
+                            <td>
+        <span class="status-badge"
+              th:classappend="${item.estado == 'Pendiente' ? 'status-pendiente' :
+                               (item.estado == 'Entregado' ? 'status-entregado' : 'status-reparacion')}"
+              th:text="${item.estado}">
+        </span>
+                            </td>
+
+                            <td class="text-muted" th:text="${item.fechaIngreso}">2024-01-01</td>
+
+                            <td><a href="/servicios" class="btn-icon"><i class="fas fa-ellipsis-v"></i></a></td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                    <div th:if="${#lists.isEmpty(servicios)}" style="padding:20px; text-align:center; color:#999;">
+                        No hay servicios recientes.
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-card chart-section">
+                <div class="card-header">
+                    <h3>Estado del Taller</h3>
+                </div>
+                <div style="height: 250px; width: 100%; position: relative; display:flex; justify-content:center; align-items:center;">
+                    <canvas id="dashboardChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    const pendientes = /*[[${pendientes}]]*/ 0;
+    const proceso = /*[[${proceso}]]*/ 0;
+    const completados = /*[[${completados}]]*/ 0;
+
+    const ctx = document.getElementById('dashboardChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Pendientes', 'En Proceso', 'Completados'],
+            datasets: [{
+                data: [pendientes, proceso, completados],
+                backgroundColor: ['#ef4444', '#3b82f6', '#22c55e'],
+                borderWidth: 0,
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '75%',
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+</script>
+
+</body>
+</html>

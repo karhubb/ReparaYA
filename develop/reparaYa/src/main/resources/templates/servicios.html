@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Servicios - Repara Ya</title>
+
+    <link rel="stylesheet" th:href="@{/css/global.css}">
+    <link rel="stylesheet" th:href="@{/css/servicios.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="dashboard-container">
+    <div class="sidebar">
+        <div class="logo"><i class="fas fa-tools"></i> <span>Repara Ya</span></div>
+        <ul class="menu-items">
+            <li><a href="/dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="/clientes"><i class="fas fa-users"></i> Clientes</a></li>
+            <li class="active"><a href="/servicios"><i class="fas fa-wrench"></i> Servicios</a></li>
+            <li><a href="/inventario"><i class="fas fa-box"></i> Inventario</a></li>
+            <li><a href="/gastos"><i class="fas fa-file-invoice-dollar"></i> Gastos</a></li>
+            <li><a href="/reportes"><i class="fas fa-chart-bar"></i> Reportes</a></li>
+            <li class="bottom-item"><a href="/configuracion"><i class="fas fa-cog"></i> Configuración</a></li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <div class="page-header">
+            <div>
+                <h1>Servicios</h1>
+                <p>Gestiona los servicios de reparación</p>
+            </div>
+            <button class="btn-new" onclick="nuevoServicio()">
+                <i class="fas fa-plus"></i> Nuevo servicio
+            </button>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card white">
+                <span class="stat-label">Total</span>
+                <span class="stat-value" th:text="${servicios != null ? servicios.size() : 0}">0</span>
+            </div>
+            <div class="stat-card red">
+                <span class="stat-label">Pendientes</span>
+                <span class="stat-value" th:text="${countPendientes ?: 0}">0</span>
+            </div>
+            <div class="stat-card blue">
+                <span class="stat-label">En proceso</span>
+                <span class="stat-value" th:text="${countProceso ?: 0}">0</span>
+            </div>
+            <div class="stat-card green">
+                <span class="stat-label">Completados</span>
+                <span class="stat-value" th:text="${countCompletados ?: 0}">0</span>
+            </div>
+        </div>
+
+        <div class="filters-bar">
+            <div class="search-wrapper">
+                <i class="fas fa-search"></i>
+                <input type="text" id="inputBusqueda" placeholder="Buscar por cliente, dispositivo o ID...">
+            </div>
+            <div class="filter-dropdown">
+                <select id="filtroEstado">
+                    <option value="Todos">Todos los estados</option>
+                    <option value="Pendiente">Pendiente</option>
+                    <option value="En Reparación">En Reparación</option>
+                    <option value="Entregado">Entregado</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="custom-table" id="tablaServicios">
+                <thead>
+                <tr>
+                    <th>ID</th><th>Cliente</th><th>Dispositivo</th><th>Estado</th><th>Prioridad</th><th>Fecha</th><th>Acciones</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="s : ${servicios}" th:data-estado="${s.estado}">
+                    <td style="font-weight: 600; color: #6B7280;" th:text="'#' + ${s.id}">#001</td>
+
+                    <td>
+                        <div class="cell-content">
+                            <h4 th:text="${s.cliente?.nombre ?: 'Sin Cliente'}"></h4>
+                            <span th:text="${s.cliente != null ? s.cliente.telefono : '--'}"></span>
+                        </div>
+                    </td>
+
+                    <td>
+                        <div class="cell-content">
+                            <h4 th:text="|${s.marca ?: ''} ${s.modelo ?: ''}|"></h4>
+                            <span th:text="${s.falla ?: ''}" style="color:#DC2626;"></span>
+                        </div>
+                    </td>
+
+                    <td>
+                            <span class="badge"
+                                  th:classappend="${s.estado != null ? 'status-' + s.estado.toLowerCase().replace(' ', '').replace('ó','o') : 'status-pendiente'}"
+                                  th:text="${s.estado ?: 'Pendiente'}"></span>
+                    </td>
+
+                    <td>
+                        <span class="priority-badge" th:classappend="${s.prioridad == 'Urgente' ? 'p-urgente' : 'p-normal'}" th:text="${s.prioridad ?: 'Normal'}"></span>
+                    </td>
+
+                    <td th:text="${s.fechaIngreso}"></td>
+
+                    <td style="text-align: right;">
+                        <div class="action-buttons">
+                            <button class="btn-icon" title="Ver Detalles" onclick="verServicio(this)"
+                                    th:data-id="${s.id}" th:data-cliente="${s.cliente?.nombre}" th:data-tel="${s.cliente?.telefono}"
+                                    th:data-equipo="|${s.marca ?: ''} ${s.modelo ?: ''}|" th:data-tipo="${s.tipoDispositivo}"
+                                    th:data-serie="${s.numeroSerie}" th:data-color="${s.color}" th:data-pass="${s.contrasena}"
+                                    th:data-falla="${s.falla}" th:data-obs="${s.observaciones}"
+                                    th:data-estado="${s.estado}" th:data-costo="${s.costoTotal}" th:data-anticipo="${s.anticipo}"
+                                    th:data-foto-f="${s.fotoFrente}" th:data-foto-t="${s.fotoTrasera}" th:data-foto-p="${s.fotoPantalla}">
+                                <i class="far fa-eye"></i>
+                            </button>
+
+                            <button class="btn-icon" title="Editar" onclick="editarServicio(this)"
+                                    th:data-id="${s.id}"
+                                    th:data-cliente-id="${s.cliente?.id}"
+                                    th:data-tipo="${s.tipoDispositivo}"
+                                    th:data-marca="${s.marca}"
+                                    th:data-modelo="${s.modelo}"
+                                    th:data-color="${s.color}"
+                                    th:data-serie="${s.numeroSerie}"
+                                    th:data-pass="${s.contrasena}"
+                                    th:data-falla="${s.falla}"
+                                    th:data-obs="${s.observaciones}"
+                                    th:data-prioridad="${s.prioridad}"
+                                    th:data-estado="${s.estado}"
+                                    th:data-costo="${s.costoTotal}"
+                                    th:data-anticipo="${s.anticipo}">
+                                <i class="far fa-edit"></i>
+                            </button>
+
+                            <button class="btn-icon" title="Imprimir" onclick="prepararImpresion(this)"
+                                    th:data-cliente="${s.cliente?.nombre}"
+                                    th:data-equipo="|${s.marca} ${s.modelo}|" th:data-falla="${s.falla}"
+                                    th:data-pass="${s.contrasena}" th:data-serie="${s.numeroSerie}" th:data-obs="${s.observaciones}"
+                                    th:data-total="${s.costoTotal}" th:data-anticipo="${s.anticipo}">
+                                <i class="fas fa-print"></i>
+                            </button>
+
+                            <button class="btn-icon delete" title="Eliminar"
+                                    onclick="confirmarBorrado(this)"
+                                    th:data-id="${s.id}">
+                                <i class="far fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="modalNuevo" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalTitle" style="font-size:18px; margin:0;">Nuevo Servicio</h2>
+            <span class="close-btn" onclick="cerrarModal('modalNuevo')">&times;</span>
+        </div>
+
+        <div class="modal-body">
+            <form id="formServicio" action="/servicios/guardar" method="post" enctype="multipart/form-data" onsubmit="prepararFalla()">
+                <input type="hidden" name="id" id="inputId">
+
+                <div style="font-weight:600; color:#2563EB; margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:5px;">Cliente</div>
+                <div class="form-group">
+                    <label>Cliente *</label>
+                    <select name="cliente" id="inCliente" class="form-control" required>
+                        <option value="">Seleccione un cliente...</option>
+                        <option th:each="c : ${clientes}"
+                                th:value="${c.id}"
+                                th:text="${c.nombre} + ' - ' + ${c.telefono}"></option>
+                    </select>
+                </div>
+
+                <div style="font-weight:600; color:#2563EB; margin-bottom:10px; margin-top:20px; border-bottom:1px solid #eee; padding-bottom:5px;">Datos del Equipo</div>
+                <div class="form-grid-3">
+                    <div class="form-group"><label>Tipo</label><select name="tipoDispositivo" id="inTipo" class="form-control"><option>Celular</option><option>Tablet</option><option>Laptop</option><option>Consola</option></select></div>
+                    <div class="form-group"><label>Marca</label><input type="text" name="marca" id="inMarca" class="form-control"></div>
+                    <div class="form-group"><label>Modelo</label><input type="text" name="modelo" id="inModelo" class="form-control"></div>
+                </div>
+                <div class="form-grid-3">
+                    <div class="form-group"><label>Nº Serie / IMEI</label><input type="text" name="numeroSerie" id="inSerie" class="form-control"></div>
+                    <div class="form-group"><label>Color</label><input type="text" name="color" id="inColor" class="form-control"></div>
+                    <div class="form-group"><label>Contraseña / Patrón</label><input type="text" name="contrasena" id="inPass" class="form-control" style="border-color:#FCA5A5"></div>
+                </div>
+
+                <div style="font-weight:600; color:#2563EB; margin-bottom:10px; margin-top:20px; border-bottom:1px solid #eee; padding-bottom:5px;">Diagnóstico</div>
+                <input type="hidden" name="falla" id="inputFalla">
+                <div class="checklist-grid">
+                    <label class="check-item"><input type="checkbox" class="chkFalla" name="falla_temp" value="Pantalla rota"> Pantalla rota</label>
+                    <label class="check-item"><input type="checkbox" class="chkFalla" name="falla_temp" value="No enciende"> No enciende</label>
+                    <label class="check-item"><input type="checkbox" class="chkFalla" name="falla_temp" value="No carga"> No carga</label>
+                    <label class="check-item"><input type="checkbox" class="chkFalla" name="falla_temp" value="Mojado"> Equipo Mojado</label>
+                    <label class="check-item"><input type="checkbox" class="chkFalla" name="falla_temp" value="Bateria"> Batería</label>
+                    <label class="check-item"><input type="checkbox" class="chkFalla" name="falla_temp" value="Software"> Software</label>
+                    <label class="check-item"><input type="checkbox" class="chkFalla" name="falla_temp" value="Botones"> Botones</label>
+                    <label class="check-item"><input type="checkbox" class="chkFalla" name="falla_temp" value="Camara"> Cámara</label>
+                    <label class="check-item"><input type="checkbox" class="chkFalla" name="falla_temp" value="Audio"> Audio/Mic</label>
+                </div>
+                <div class="form-group" style="margin-top:10px;"><label>Observaciones</label><textarea name="observaciones" id="inObs" class="form-control" rows="2"></textarea></div>
+
+                <div class="form-grid-3" style="margin-top:15px;">
+                    <div class="form-group"><label>Estado</label><select name="estado" id="inEstado" class="form-control"><option>Pendiente</option><option>En Reparación</option><option>En Diagnóstico</option><option>Entregado</option></select></div>
+                    <div class="form-group"><label>Prioridad</label><select name="prioridad" id="inPrioridad" class="form-control"><option>Normal</option><option>Urgente</option></select></div>
+                    <div class="form-group"><label>Costo Estimado</label><input type="number" name="costoTotal" id="inCosto" class="form-control"></div>
+                    <div class="form-group"><label>Anticipo</label><input type="number" name="anticipo" id="inAnticipo" class="form-control"></div>
+                </div>
+
+                <div style="font-weight:600; color:#2563EB; margin-bottom:10px; margin-top:20px; border-bottom:1px solid #eee; padding-bottom:5px;">Evidencia (Fotos)</div>
+                <div class="camera-grid">
+                    <div class="camera-box" onclick="document.getElementById('camF').click()">
+                        <input type="file" name="fileFrente" id="camF" style="display:none" onchange="preview(this, 'prevF')">
+                        <i class="fas fa-mobile-alt" style="font-size:20px; margin-bottom:5px;"></i><span>Frente</span>
+                        <img id="prevF" style="display:none; width:100%; height:100%; object-fit:cover; position:absolute;">
+                    </div>
+                    <div class="camera-box" onclick="document.getElementById('camT').click()">
+                        <input type="file" name="fileTrasera" id="camT" style="display:none" onchange="preview(this, 'prevT')">
+                        <i class="fas fa-microchip" style="font-size:20px; margin-bottom:5px;"></i><span>Reverso</span>
+                        <img id="prevT" style="display:none; width:100%; height:100%; object-fit:cover; position:absolute;">
+                    </div>
+                    <div class="camera-box" onclick="document.getElementById('camP').click()">
+                        <input type="file" name="filePantalla" id="camP" style="display:none" onchange="preview(this, 'prevP')">
+                        <i class="fas fa-desktop" style="font-size:20px; margin-bottom:5px;"></i><span>Pantalla</span>
+                        <img id="prevP" style="display:none; width:100%; height:100%; object-fit:cover; position:absolute;">
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="modal-footer">
+            <button onclick="cerrarModal('modalNuevo')" style="background:white; border:1px solid #ccc; padding:10px 20px; border-radius:6px; cursor:pointer;">Cancelar</button>
+            <button type="submit"
+                    form="formServicio"
+                    onclick="prepararFalla()"
+                    style="background:#2563EB; color:white; border:none; padding:10px 20px; border-radius:6px; cursor:pointer; margin-left:10px;">
+                Guardar
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="modalVer" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 style="font-size:18px; margin:0;">Detalles <span id="vId" style="color:#6B7280; font-weight:400;"></span></h2>
+            <span class="close-btn" onclick="cerrarModal('modalVer')">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div style="background:#EFF6FF; padding:15px; border-radius:8px; margin-bottom:20px; border:1px solid #DBEAFE;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                    <strong style="color:#1E40AF;">ESTADO:</strong>
+                    <span id="vEstado" class="badge" style="background:white;"></span>
+                </div>
+            </div>
+            <div class="detail-row"><div class="detail-label">Cliente:</div><div class="detail-value" id="vCliente"></div></div>
+            <div class="detail-row"><div class="detail-label">Teléfono:</div><div class="detail-value" id="vTel"></div></div>
+            <div class="detail-row"><div class="detail-label">Equipo:</div><div class="detail-value"><span id="vTipo" style="font-weight:600;"></span> - <span id="vEquipo"></span></div></div>
+            <div class="detail-row"><div class="detail-label">Serie/IMEI:</div><div class="detail-value" id="vSerie"></div></div>
+            <div class="detail-row"><div class="detail-label">Color:</div><div class="detail-value" id="vColor"></div></div>
+            <div class="detail-row"><div class="detail-label" style="color:#DC2626;">Contraseña:</div><div class="detail-value" id="vPass"></div></div>
+            <div class="detail-row"><div class="detail-label">Fallas:</div><div class="detail-value" id="vFalla" style="color:#DC2626; font-weight:600;"></div></div>
+            <div class="detail-row"><div class="detail-label">Obs:</div><div class="detail-value" id="vObs"></div></div>
+            <div class="detail-row"><div class="detail-label">Costo Total:</div><div class="detail-value money" id="vTotal"></div></div>
+            <div class="detail-row"><div class="detail-label">Anticipo:</div><div class="detail-value money" id="vAnticipo"></div></div>
+            <div class="detail-row"><div class="detail-label">Resta:</div><div class="detail-value money" id="vResta" style="color:#DC2626;"></div></div>
+
+            <h4 style="margin-top:20px; color:#374151;">Fotos</h4>
+            <div class="camera-grid">
+                <div class="camera-box" style="cursor:default; background:white;"><span>Frente</span><img id="vImgF" style="display:none; width:100%; height:100%; object-fit:contain;"></div>
+                <div class="camera-box" style="cursor:default; background:white;"><span>Reverso</span><img id="vImgT" style="display:none; width:100%; height:100%; object-fit:contain;"></div>
+                <div class="camera-box" style="cursor:default; background:white;"><span>Pantalla</span><img id="vImgP" style="display:none; width:100%; height:100%; object-fit:contain;"></div>
+            </div>
+        </div>
+        <div class="modal-footer"><button onclick="cerrarModal('modalVer')" style="background:#2563EB; color:white; border:none; padding:10px 20px; border-radius:6px; cursor:pointer;">Cerrar</button></div>
+    </div>
+</div>
+
+<div id="ticketTemplate" style="display:none;">
+    <div style="width: 280px; font-family: monospace; text-align: center; font-size: 11px;">
+        <h3 style="margin:5px 0;">REPARA YA</h3><p>Orden de Servicio</p><hr>
+        <div style="text-align: left;">
+            <p><strong>Folio:</strong> #<span id="tFolio"></span></p>
+            <p><strong>Fecha:</strong> <span id="tFecha"></span></p>
+            <p><strong>Cliente:</strong> <span id="tCliente"></span></p>
+            <p><strong>Equipo:</strong> <span id="tEquipo"></span></p>
+            <p><strong>Falla:</strong> <span id="tFalla"></span></p>
+            <p><strong>Total:</strong> $<span id="tTotal"></span></p>
+            <p><strong>Anticipo:</strong> $<span id="tAnticipo"></span></p>
+            <p><strong>Resta:</strong> $<span id="tResta"></span></p>
+        </div><hr><p>Garantía de 30 días.</p>
+    </div>
+</div>
+
+<script>
+    function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
+    window.onclick = function(e) { if(e.target.classList.contains('modal-overlay')) e.target.style.display = 'none'; }
+
+    function nuevoServicio() {
+        document.getElementById('formServicio').reset();
+        document.getElementById('inputId').value = "";
+        document.getElementById('modalTitle').innerText = "Nuevo Servicio";
+        document.querySelectorAll('.checklist-grid input').forEach(c => c.checked = false);
+        ['prevF', 'prevT', 'prevP'].forEach(id => document.getElementById(id).style.display = 'none');
+        document.getElementById('modalNuevo').style.display = 'flex';
+    }
+
+    function editarServicio(btn) {
+        const d = btn.dataset;
+        document.getElementById('inputId').value = d.id;
+
+        if (document.getElementById('inCliente')) {
+            document.getElementById('inCliente').value = d.clienteId;
+        }
+
+        document.getElementById('inTipo').value = d.tipo;
+        document.getElementById('inMarca').value = d.marca;
+        document.getElementById('inModelo').value = d.modelo;
+        document.getElementById('inColor').value = d.color;
+        document.getElementById('inSerie').value = d.serie;
+        document.getElementById('inPass').value = d.pass;
+        document.getElementById('inObs').value = d.obs;
+        document.getElementById('inPrioridad').value = d.prioridad;
+        document.getElementById('inCosto').value = d.costo;
+        document.getElementById('inAnticipo').value = d.anticipo;
+        document.getElementById('inEstado').value = d.estado;
+
+        // Reset de checkboxes
+        document.querySelectorAll('.checklist-grid input').forEach(c => c.checked = false);
+        if(d.falla) {
+            d.falla.split(', ').forEach(f => {
+                const chk = document.querySelector(`.checklist-grid input[value="${f}"]`);
+                if(chk) chk.checked = true;
+            });
+        }
+        document.getElementById('modalTitle').innerText = "Editar Servicio #" + d.id;
+        document.getElementById('modalNuevo').style.display = 'flex';
+    }
+
+    function verServicio(btn) {
+        const d = btn.dataset;
+        document.getElementById('vId').innerText = "#" + d.id;
+        document.getElementById('vEstado').innerText = d.estado || "Pendiente";
+        document.getElementById('vCliente').innerText = d.cliente;
+        document.getElementById('vTel').innerText = d.tel || "--";
+        document.getElementById('vTipo').innerText = d.tipo || "Equipo";
+        document.getElementById('vEquipo').innerText = d.equipo;
+        document.getElementById('vSerie').innerText = d.serie || "--";
+        document.getElementById('vColor').innerText = d.color || "--";
+        document.getElementById('vPass').innerText = d.pass || "Sin clave";
+        document.getElementById('vFalla').innerText = d.falla || "Sin datos";
+        document.getElementById('vObs').innerText = d.obs || "Ninguna";
+
+        const total = parseFloat(d.costo) || 0;
+        const anti = parseFloat(d.anticipo) || 0;
+        document.getElementById('vTotal').innerText = "$" + total.toFixed(2);
+        document.getElementById('vAnticipo').innerText = "$" + anti.toFixed(2);
+        document.getElementById('vResta').innerText = "$" + (total - anti).toFixed(2);
+
+        const show = (imgId, file) => {
+            const el = document.getElementById(imgId);
+            if(file && file !== 'null' && file !== '') { el.src = '/uploads/servicios/' + file; el.style.display = 'block'; }
+            else { el.style.display = 'none'; }
+        };
+        show('vImgF', d.fotoF); show('vImgT', d.fotoT); show('vImgP', d.fotoP);
+        document.getElementById('modalVer').style.display = 'flex';
+    }
+
+    function prepararImpresion(btn) {
+        const d = btn.dataset;
+        document.getElementById('tFolio').innerText = d.id;
+        document.getElementById('tFecha').innerText = new Date().toLocaleDateString();
+        document.getElementById('tCliente').innerText = d.cliente;
+        document.getElementById('tEquipo').innerText = d.equipo;
+        document.getElementById('tFalla').innerText = d.falla;
+
+        const total = parseFloat(d.total) || 0;
+        const anti = parseFloat(d.anticipo) || 0;
+        document.getElementById('tTotal').innerText = total.toFixed(2);
+        document.getElementById('tAnticipo').innerText = anti.toFixed(2);
+        document.getElementById('tResta').innerText = (total - anti).toFixed(2);
+
+        var contenido = document.getElementById('ticketTemplate').innerHTML;
+        var ventana = window.open('', '', 'height=600, width=400');
+        ventana.document.write('<html><head><title>Ticket</title></head><body>');
+        ventana.document.write(contenido);
+        ventana.document.write('</body></html>');
+        ventana.document.close();
+        setTimeout(function() { ventana.print(); }, 500);
+    }
+
+    function confirmarBorrado(btn) {
+        if(confirm("¿Eliminar servicio #" + btn.dataset.id + "?")) {
+            window.location.href = "/servicios/eliminar/" + btn.dataset.id;
+        }
+    }
+
+    function preview(input, imgId) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) { document.getElementById(imgId).src = e.target.result; document.getElementById(imgId).style.display = 'block'; }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+    function prepararFalla() {
+        const fallas = [];
+        document.querySelectorAll('.chkFalla:checked').forEach(chk => {
+            fallas.push(chk.value);
+        });
+        document.getElementById('inputFalla').value = fallas.join(', ');
+    }
+    document.getElementById('filtroEstado').addEventListener('change', function(e){
+        const v = e.target.value;
+        document.querySelectorAll('#tablaServicios tbody tr').forEach(r => {
+            r.style.display = (v==='Todos' || r.dataset.estado===v) ? '' : 'none';
+        });
+    });
+    document.getElementById('inputBusqueda').addEventListener('keyup', function(e) {
+        var texto = e.target.value.toLowerCase();
+        document.querySelectorAll('#tablaServicios tbody tr').forEach(f => {
+            f.style.display = f.innerText.toLowerCase().includes(texto) ? '' : 'none';
+        });
+    });
+</script>
+
+</body>
+</html>
